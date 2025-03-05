@@ -74,25 +74,25 @@ TumorTrace/
 ### Preprocess Data
 Run the following command to preprocess the MRI scans:
 ```sh
-python src/preprocessing.py --input data/raw --output data/processed
+python data/data_preprocessing.py --input data/raw --output data/processed
 ```
 
 ### Train Model
 To train the deep learning models:
 ```sh
-python src/train.py --config config.yaml
+python models/desiredmodel/train.py --config config.yaml
 ```
 
 ### Evaluate Model
 To evaluate a trained model:
 ```sh
-python src/evaluate.py --model models/best_model.pth
+python models/desiredmodel/evaluate.py
 ```
 
 ### Run Inference
 To make predictions on new MRI scans:
 ```sh
-python src/inference.py --image path/to/image
+python models/desiredmodel/inference.py --image path/to/image
 ```
 
 ## Dataset
@@ -103,13 +103,6 @@ We use a publicly available brain MRI dataset from Kaggle:
 Medical AI models must prioritize safety, accuracy, and transparency. To mitigate automation bias and misdiagnosis risks, our model provides probability-based results rather than definitive diagnoses. This ensures that medical professionals remain the primary decision-makers.
 
 ## Contributors
-- **Jimmy Vu** – Model development & implementation
-- **William Akins** – Data preprocessing & evaluation
-- **Chen Zhang** – Documentation & project structure
-
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## References
-Refer to our full list of references in the `docs/` folder.
-
+- **Jimmy Vu** – TBD
+- **William Akins** – TBD
+- **Chen Zhang** – TBD
