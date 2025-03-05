@@ -17,20 +17,41 @@ Magnetic Resonance Imaging (MRI) is an essential tool in medical diagnostics. Ho
 ## Directory Structure
 ```plaintext
 TumorTrace/
-│-- data/                      # Dataset and preprocessing scripts
-│   │-- raw/                   # Original MRI scan images
-│   │-- processed/             # Preprocessed images ready for training
-│-- models/                    # Trained model checkpoints and architecture implementations
-│-- notebooks/                 # Jupyter notebooks for exploratory data analysis
-│-- src/                       # Source code for the deep learning pipeline
-│   │-- preprocessing.py       # Data preprocessing and augmentation
-│   │-- train.py               # Training script for model training
-│   │-- evaluate.py            # Model evaluation and performance metrics
-│   │-- inference.py           # Script for making predictions on new data
-│-- results/                   # Model performance results, confusion matrices, and logs
-│-- docs/                      # Project documentation and references
-│-- requirements.txt           # List of required dependencies
-│-- README.md                  # Project overview and setup instructions
+│── data/                      # Contains datasets and preprocessing scripts
+│   ├── raw/                   # Original MRI dataset (e.g., downloaded from Kaggle)
+│   ├── processed/             # Preprocessed MRI scans (after transformations)
+│   ├── data_preprocessing.py  # Script to preprocess MRI images
+│
+│── models/                    # Contains different model implementations
+│   ├── 3D_CNN/                # 3D Convolutional Neural Network implementation
+│   │   ├── model.py           # Model architecture
+│   │   ├── train.py           # Training script
+│   │   ├── evaluate.py        # Evaluation script
+│   │   ├── checkpoints/       # Saved model weights
+│   ├── Inception/             # Inception model implementation
+│   │   ├── model.py
+│   │   ├── train.py
+│   │   ├── evaluate.py
+│   │   ├── checkpoints/
+│   ├── ResNet/                # ResNet model implementation
+│   │   ├── model.py
+│   │   ├── train.py
+│   │   ├── evaluate.py
+│   │   ├── checkpoints/
+│
+│── results/                   # Stores output reports, visualizations, and analysis
+│   ├── figures/               # Plots, confusion matrices, loss curves
+│   ├── performance_metrics.csv# Stores accuracy, F1-score, etc.
+│
+│── utils/                     # Utility functions
+│   ├── image_loader.py        # MRI image loading functions
+│   ├── visualization.py       # Functions for visualizing MRI scans
+│
+│── docs/                      # Documentation and reports
+│   ├── proposal.pdf           # Original project proposal
+│   ├── README.md              # Project overview and instructions
+|
+│── requirements.txt           # Dependencies (TensorFlow, PyTorch, etc.)
 ```
 
 ## Installation & Setup
