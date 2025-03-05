@@ -1,0 +1,9 @@
+name: TumorTrace
+channels:
+  - defaults
+dependencies:
+  - numpy
+  - matplotlib
+  - pyyaml=5.4.1
+  - pytorch
+  - torchvision
