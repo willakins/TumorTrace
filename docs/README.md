@@ -21,11 +21,21 @@ Magnetic Resonance Imaging (MRI) is an essential tool in medical diagnostics. Ho
 
 ```plaintext
 TumorTrace/
+│── config/                    # Different config files
+│   ├── config.yaml            # Main config file
+│
 │── data/                      # Contains datasets and preprocessing scripts
 │   ├── raw/                   # Original MRI dataset (e.g., downloaded from Kaggle)
 │   ├── processed/             # Preprocessed MRI scans (after transformations)
 │   ├── data_preprocessing.py  # Script to preprocess MRI images
-│
+|
+│── docs/                      # Documentation and reports
+│   ├── proposal.pdf           # Original project proposal
+│   ├── README.md              # Project overview and instructions
+|
+│── environments/                   # Stores any environment files used
+│   ├── environment.yaml            # Main environment file to run ipynb
+|
 │── models/                    # Contains different model implementations
 │   ├── 3D_CNN/                # 3D Convolutional Neural Network implementation
 │   │   ├── model.py           # Model architecture
@@ -42,22 +52,19 @@ TumorTrace/
 │   │   ├── train.py
 │   │   ├── evaluate.py
 │   │   ├── checkpoints/
+|
+│── notebooks/                      # Stores ipynb that we use
+│   ├── main.ipynb                  # Main notebook for running models
 │
 │── results/                   # Stores output reports, visualizations, and analysis
 │   ├── figures/               # Plots, confusion matrices, loss curves
 │   ├── performance_metrics.csv# Stores accuracy, F1-score, etc.
 │
-│── environments/                   # Stores any environment files used
-│   ├── environment.yaml            # Main environment file to run ipynb
-│
 │── utils/                     # Utility functions
 │   ├── image_loader.py        # MRI image loading functions
 │   ├── visualization.py       # Functions for visualizing MRI scans
 │
-│── docs/                      # Documentation and reports
-│   ├── proposal.pdf           # Original project proposal
-│   ├── README.md              # Project overview and instructions
-|
+│── .gitignore                 # Git files not to track
 │── requirements.txt           # Dependencies (TensorFlow, PyTorch, etc.)
 ```
 
