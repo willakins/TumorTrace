@@ -1,19 +1,9 @@
 """
 This file should preprocess the raw data and place the final data into the preprocessed folder.
 """
-import pickle
-from torch.utils.data import Dataset, DataLoader, random_split
-import torchvision.transforms as transforms
 import torch
-data_path = 'archive\\brain_tumor_mri\\new_dataset\\training_data.pickle'
-
-
-# Data preloaded from pickle file
-with open(data_path, 'rb') as file:
-    loaded_data = pickle.load(file)
-
-# Unpacking the data into the images and their corresponding labels
-images, labels = zip(*loaded_data)
+from torch.utils.data import Dataset
+import torchvision.transforms as transforms
 
 # Dataset class for MRI image scans
 class MRIDataset(Dataset):
@@ -45,28 +35,3 @@ class MRIDataset(Dataset):
             image = self.transformation(image)
             
         return image, label
-
-# Applying random transformations to vary data
-transformations = transforms.Compose([
-    transforms.RandomRotation(15),
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomVerticalFlip()
-])
-
-dataset = MRIDataset(images, labels, transformations, model_type=None)
-
-# Splitting the dataset into training and testing
-training_size = int(.8 * len(dataset))
-testing_size = len(dataset) - training_size
-training_dataset, testing_dataset = random_split(dataset, [training_size, testing_size])
-
-# Two separate loaders for training and testing
-train_loader = DataLoader(training_dataset, batch_size=16, shuffle=True)
-testing_loader = DataLoader(testing_dataset, batch_size=16, shuffle=True)
-
-
-
-for sample_image, sample_label in train_loader:
-    print(f"Image shape: {sample_image.shape}")
-    print(f"Label: {sample_label}")
-    break
