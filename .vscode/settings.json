@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./models/3D_CNN",
+        "./models"
+    ]
+}

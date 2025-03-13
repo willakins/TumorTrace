@@ -7,3 +7,4 @@ dependencies:
   - pyyaml=5.4.1
   - pytorch
   - torchvision
+  - scikit-learn
