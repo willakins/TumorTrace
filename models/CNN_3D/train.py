@@ -59,6 +59,11 @@ class Trainer:
                 best_val_accuracy = val_accuracy
                 self.save_model()
 
+    def save_model(self, save_path="models/3D_CNN/checkpoints/cnn_3d.pth"):
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        torch.save(self.model.state_dict(), save_path)
+        print(f"Model saved at {save_path}")
+
     def evaluate(self):
         self.model.eval()
         all_preds = []
@@ -77,8 +82,3 @@ class Trainer:
 
         accuracy = accuracy_score(all_labels, all_preds)
         return accuracy
-
-    def save_model(self, save_path="models/3D_CNN/checkpoints/cnn_3d.pth"):
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        torch.save(self.model.state_dict(), save_path)
-        print(f"Model saved at {save_path}")

@@ -18,20 +18,20 @@ class MRIDataset(Dataset):
 
     def __getitem__(self, idx):
         # from HxWxC to CxHxW
-        image = torch.tensor(self.images[idx]).permute(2, 0, 1)
+        image = torch.tensor(self.images[idx], dtype=torch.float32).permute(2, 0, 1)
 
         label = torch.tensor(self.labels[idx], dtype=torch.float32)
 
         # Depending on what model, resize the image
-        if (self.model_type == "resnet"):
+        if self.model_type == "resnet":
             resize = transforms.Resize((224, 224))
             image = resize(image)
-        elif (self.model_type == "inception"):
+        elif self.model_type == "inception":
             resize = transforms.Resize((299, 299))
             image = resize(image)
 
         # Applies the randomized transformations to the images
         if self.transformation:
             image = self.transformation(image)
-            
+
         return image, label
