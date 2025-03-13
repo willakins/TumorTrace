@@ -17,8 +17,8 @@ class MRIDataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, idx):
-        # from HxWxC to CxHxW
-        image = torch.tensor(self.images[idx], dtype=torch.float32).permute(2, 0, 1)
+        # Assuming images[idx] is a 3D numpy array of shape (D, H, W)
+        image = torch.tensor(self.images[idx], dtype=torch.float32).unsqueeze(0)
 
         label = torch.tensor(self.labels[idx], dtype=torch.float32)
 

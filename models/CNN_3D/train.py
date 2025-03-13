@@ -1,5 +1,6 @@
 import torch
 from sklearn.metrics import accuracy_score
+from utils.visualization import Visualizer
 import os
 
 class Trainer:
@@ -14,6 +15,8 @@ class Trainer:
         
         self.model.to(self.device)
 
+        self.visualizer = Visualizer()
+
 
     def train(self):
         best_val_accuracy = 0
@@ -26,6 +29,8 @@ class Trainer:
             # Training loop
             for batch_idx, (inputs, labels) in enumerate(self.train_loader):
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
+                labels -= 1 #labels are (1,2,3) but need to be (0,1,2)
+                labels = labels.long() # Required for nn.crossEntropy
 
                 # Zero the parameter gradients
                 self.optimizer.zero_grad()
@@ -35,6 +40,7 @@ class Trainer:
 
                 # Compute loss
                 loss = self.criterion(outputs, labels)
+                print(f'Batch number {batch_idx}, Loss: {loss}')
                 running_loss += loss.item()
 
                 # Backward pass and optimize
@@ -51,6 +57,9 @@ class Trainer:
 
             # Validation step
             val_accuracy = self.evaluate()
+            
+            # Update visualizer metrics
+            self.visualizer.update_metrics(epoch_loss, epoch_accuracy, val_accuracy)
 
             print(f'Epoch [{epoch+1}/{self.num_epochs}], Loss: {epoch_loss:.4f}, Train Accuracy: {epoch_accuracy*100:.2f}%, Validation Accuracy: {val_accuracy*100:.2f}%')
 
@@ -58,6 +67,10 @@ class Trainer:
             if val_accuracy > best_val_accuracy:
                 best_val_accuracy = val_accuracy
                 self.save_model()
+
+        # After training, plot the metrics
+        self.visualizer.plot_loss()
+        self.visualizer.plot_accuracy()
 
     def save_model(self, save_path="models/3D_CNN/checkpoints/cnn_3d.pth"):
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
