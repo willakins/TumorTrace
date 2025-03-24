@@ -77,7 +77,7 @@ class Trainer:
         torch.save(self.model.state_dict(), save_path)
         print(f"Model saved at {save_path}")
 
-    def evaluate(self):
+    def evaluate(self, return_preds=False):
         self.model.eval()
         all_preds = []
         all_labels = []
@@ -94,4 +94,8 @@ class Trainer:
                 all_labels.extend(labels.cpu().numpy())
 
         accuracy = accuracy_score(all_labels, all_preds)
-        return accuracy
+
+        if return_preds:
+            return accuracy, all_labels, all_preds
+        else:
+            return accuracy
