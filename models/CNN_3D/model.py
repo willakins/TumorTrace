@@ -14,12 +14,12 @@ class CNN_3D(nn.Module):
             nn.Conv3d(16, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             
-            nn.Conv3d(32, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU()
+            #nn.Conv3d(32, 64, kernel_size=3, stride=1, padding=1),
+            #nn.ReLU()
         )
         
         # Fully connected layers
-        self.fc1 = nn.Linear(64 * 256 * 256 * 1, 512)
+        self.fc1 = nn.Linear(32 * 256 * 256 * 1, 512)
         self.fc2 = nn.Linear(512, num_classes)
 
     def forward(self, x):
