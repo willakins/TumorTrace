@@ -16,6 +16,12 @@ class Trainer:
         self.model.to(self.device)
 
         self.visualizer = Visualizer()
+        
+        # Storing training history
+        self.train_losses = []
+        self.train_accuracies = []
+        self.val_accuracies = []
+        
 
 
     def train(self):
@@ -67,10 +73,28 @@ class Trainer:
             if val_accuracy > best_val_accuracy:
                 best_val_accuracy = val_accuracy
                 self.save_model()
+            
+            self.train_losses.append(epoch_loss)
+            self.train_accuracies.append(epoch_accuracy)
+            self.val_accuracies.append(val_accuracy)
+
 
         # After training, plot the metrics
         self.visualizer.plot_loss()
         self.visualizer.plot_accuracy()
+
+        # Save training data
+        training_history = {
+            "train_losses": self.train_losses,
+            "train_accuracies": self.train_accuracies,
+            "val_accuracies": self.val_accuracies
+        }
+        os.makedirs(os.path.dirname("models/3D_CNN/checkpoints/cnn_3d_training.pth"), exist_ok=True)
+        torch.save(training_history, "models/3D_CNN/checkpoints/cnn_3d_training.pth")
+        print(f"Model saved at models/3D_CNN/checkpoints/cnn_3d_training.pth")
+        
+        
+
 
     def save_model(self, save_path="models/3D_CNN/checkpoints/cnn_3d.pth"):
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
