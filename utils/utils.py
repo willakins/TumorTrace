@@ -11,7 +11,7 @@ from PIL import Image
 from typing import Union, Tuple
 from sklearn.model_selection import train_test_split
 
-from models.ResNet.model import MyResNet
+from src.models.ResNet.model import MyResNet
 
 def compute_accuracy(logits: torch.Tensor, labels: torch.Tensor) -> float:
     best_guesses = torch.argmax(logits, axis=1)

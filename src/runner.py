@@ -6,7 +6,7 @@ import torch
 import torchvision.transforms as transforms
 from utils.utils import compute_accuracy, compute_loss
 from data.Image_Loader import ImageLoader
-from models.ResNet.model import MyResNet
+from src.models.ResNet.model import MyResNet
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
