@@ -6,6 +6,7 @@ import os
 import glob
 import torch
 import numpy as np
+import pickle
 from PIL import Image
 from typing import Union, Tuple
 from src.models import (
@@ -75,3 +76,27 @@ def compute_mean_and_std(dir_name: str) -> Tuple[float, float]:
     variance = M2 / (count - 1)
     std = np.sqrt(variance)
     return mean, std
+
+def convert_pickle_to_folder(pickle_path, output_dir):
+    if os.path.exists(output_dir):
+        print(f"[INFO] Skipping conversion. Folder '{output_dir}' already exists.")
+        return
+    
+    with open(pickle_path, 'rb') as f:
+        data = pickle.load(f)  # List of (image, label) tuples
+
+    images, labels = zip(*data)
+    X_train, X_test, y_train, y_test = train_test_split(images, labels, test_size=0.2, stratify=labels)
+
+    def save(split, images, labels):
+        for i, (img, label) in enumerate(zip(images, labels)):
+            label_dir = os.path.join(output_dir, split, f"class_{label}")
+            os.makedirs(label_dir, exist_ok=True)
+
+            # Normalize and save image as PNG
+            img = (img - np.min(img)) / (np.max(img) - np.min(img)) * 255
+            img = Image.fromarray(np.uint8(img)).convert("L")
+            img.save(os.path.join(label_dir, f"img_{i}.png"))
+
+    save("train", X_train, y_train)
+    save("test", X_test, y_test)
