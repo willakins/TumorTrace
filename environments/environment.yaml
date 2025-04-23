@@ -1,10 +1,12 @@
 name: TumorTrace
 channels:
+  - pytorch
   - defaults
 dependencies:
+  - python=3.11
   - numpy
   - matplotlib
   - pyyaml=5.4.1
-  - pytorch
-  - torchvision
+  - pytorch=2.1.2
+  - torchvision=0.16.2
   - scikit-learn
