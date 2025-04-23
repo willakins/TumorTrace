@@ -1,49 +1,12 @@
-"""
-This file should preprocess the raw data and place the final data into the preprocessed folder.
-"""
 import os
-from typing import Dict, List, Tuple
-
-import torch
-import torchvision
-from PIL import Image
+from typing import Tuple, List, Dict
 from torch.utils.data import Dataset
+from PIL import Image
 import torchvision.transforms as transforms
 
 
-class MRIDataset(Dataset):
-    def __init__(self, images, labels, transformation, model_type=None):
-        self.images = images
-        self.labels = labels
-        self.transformation = transformation
-        self.model_type = model_type
-
-    def __len__(self):
-        return len(self.images)
-
-    def __getitem__(self, idx):
-        # Assuming images[idx] is a 3D numpy array of shape (D, H, W)
-        image = torch.tensor(self.images[idx], dtype=torch.float32).unsqueeze(0)
-
-        label = torch.tensor(self.labels[idx], dtype=torch.float32)
-
-        # Depending on what model, resize the image
-        if self.model_type == "resnet":
-            resize = transforms.Resize((224, 224))
-            image = resize(image)
-        elif self.model_type == "inception":
-            resize = transforms.Resize((299, 299))
-            image = resize(image)
-
-        # Applies the randomized transformations to the images
-        if self.transformation:
-            image = self.transformation(image)
-
-        return image, label
-
-# Dataset class for MRI image scans
 class ImageLoader(Dataset):
-    """Class for data loading"""
+    """Dataset class for loading MRI images from disk."""
 
     train_folder = "train"
     test_folder = "test"
@@ -52,53 +15,45 @@ class ImageLoader(Dataset):
         self,
         root_dir: str,
         split: str = "train",
-        transform: torchvision.transforms.Compose = None,
+        transform: transforms.Compose = None,
     ):
         self.root = os.path.expanduser(root_dir)
         self.transform = transform
         self.split = split
+
         if split == "train":
             self.curr_folder = os.path.join(root_dir, self.train_folder)
         elif split == "test":
             self.curr_folder = os.path.join(root_dir, self.test_folder)
+
         self.class_dict = self.get_classes()
         self.dataset = self.load_imagepaths_with_labels(self.class_dict)
 
-    def load_imagepaths_with_labels(
-        self, class_labels: Dict[str, int]
-    ) -> List[Tuple[str, int]]:
+    def get_classes(self) -> Dict[str, int]:
+        class_names = sorted([
+            d for d in os.listdir(self.curr_folder)
+            if os.path.isdir(os.path.join(self.curr_folder, d))
+        ])
+        return {name: idx for idx, name in enumerate(class_names)}
 
-        img_paths = []  # a list of (filename, class index)
+    def load_imagepaths_with_labels(self, class_labels: Dict[str, int]) -> List[Tuple[str, int]]:
+        paths = []
         for class_name, label in class_labels.items():
             class_folder = os.path.join(self.curr_folder, class_name)
-            for file in os.listdir(class_folder):
-                if file.endswith(".jpg"):
-                    img_paths.append((os.path.join(class_folder, file), label))
-
-        return img_paths
-
-    def get_classes(self) -> Dict[str, int]:
-        classes = dict()
-        names = []
-        for d in os.listdir(self.curr_folder):
-            if os.path.isdir(os.path.join(self.curr_folder, d)):
-                names.append(d)
-                
-        names.sort()
-        classes = {name: idx for idx, name in enumerate(names)}
-
-        return classes
+            for fname in os.listdir(class_folder):
+                if fname.endswith(".png") or fname.endswith(".jpg"):
+                    paths.append((os.path.join(class_folder, fname), label))
+        return paths
 
     def load_img_from_path(self, path: str) -> Image:
-        return Image.open(path).convert(mode='L')
+        return Image.open(path).convert(mode='L')  # grayscale
 
-    def __getitem__(self, index: int) -> Tuple[torch.Tensor, int]:
-        path, class_idx = self.dataset[index]
+    def __getitem__(self, index: int) -> Tuple:
+        path, label = self.dataset[index]
         img = self.load_img_from_path(path)
         if self.transform:
             img = self.transform(img)
-
-        return img, class_idx
+        return img, label
 
     def __len__(self) -> int:
         return len(self.dataset)

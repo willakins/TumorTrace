@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -6,29 +5,37 @@ class CNN_3D(nn.Module):
     def __init__(self, num_classes=3): # Pituitary, Meningioma, and Glioma Tumor
         super(CNN_3D, self).__init__()
 
-        self.layers = nn.Sequential(
-            nn.Conv3d(1, 16, kernel_size=3, stride=1, padding=1),
+        self.conv_layers = nn.Sequential( # Not set up for 3D, just filler for testing
+            nn.Conv2d(in_channels=1, out_channels=10, kernel_size=5, padding=2),
+            nn.BatchNorm2d(10),
+            nn.MaxPool2d(kernel_size=3, padding=1),
             nn.ReLU(),
-            nn.MaxPool3d(kernel_size=2, stride=2),
-            
-            nn.Conv3d(16, 32, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(in_channels=10, out_channels=15, kernel_size=5, padding=2),
+            nn.BatchNorm2d(15),
             nn.ReLU(),
-            
-            nn.Conv3d(32, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU()
+            nn.Conv2d(in_channels=15, out_channels=20, kernel_size=5, padding=2),
+            nn.BatchNorm2d(20),
+            nn.ReLU(),
+            nn.Dropout(),
+            nn.Conv2d(in_channels=20, out_channels=25, kernel_size=5, padding=0),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=3)
         )
-        
-        # Fully connected layers
-        self.fc1 = nn.Linear(64 * 256 * 256 * 1, 512)
-        self.fc2 = nn.Linear(512, num_classes)
+
+        self.fc_layers = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(900, 100),
+            nn.ReLU(),
+            nn.Linear(100, num_classes)
+        )
+
+        self.loss_criterion = nn.CrossEntropyLoss(reduction='mean')
 
     def forward(self, x):
-        for layer in self.layers:
-            x = layer(x)
+        x = self.conv_layers(x)
+        model_output = self.fc_layers(x)
         
-        x = x.view(x.size(0), -1)  # Flatten the tensor to (batch_size, flattened_features)
-        
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        
-        return x
+        return model_output
+    
+    def count_parameters(self):
+        return sum(p.numel() for p in self.conv_layers.parameters()) + sum(p.numel() for p in self.fc_layers.parameters())

@@ -27,5 +27,8 @@ class MyInception(nn.Module):
     def forward(self, x):
         x = x.repeat(1, 3, 1, 1)  # as Inception accepts 3-channel color images and our images are grey-scale
         x = self.features(x)
-        x = self.classifier(x)
-        return x
+        model_output = self.classifier(x)
+        return model_output
+    
+    def count_parameters(self):
+        return sum(p.numel() for p in self.features.parameters()) + sum(p.numel() for p in self.classifier.parameters())

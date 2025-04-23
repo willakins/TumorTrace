@@ -1,10 +1,8 @@
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torchvision.models import resnet18
 
 class MyResNet(nn.Module):
-    def __init__(self):
+    def __init__(self, num_classes):
         super().__init__()
 
         pretrained_model = resnet18(pretrained=True)
@@ -15,7 +13,7 @@ class MyResNet(nn.Module):
 
         self.fc_layers = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(512, 15),
+            nn.Linear(512, num_classes),
         )
 
         self.loss_criterion = nn.CrossEntropyLoss(reduction='mean')
@@ -27,3 +25,6 @@ class MyResNet(nn.Module):
         model_output = self.fc_layers(x)
 
         return model_output
+    
+    def count_parameters(self):
+        return sum(p.numel() for p in self.conv_layers.parameters()) + sum(p.numel() for p in self.fc_layers.parameters())
