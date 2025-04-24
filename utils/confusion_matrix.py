@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 from data.image_loader import ImageLoader
 from torch import nn
 from torch.utils.data import DataLoader, Subset
+import seaborn as sns
 
 
 def generate_confusion_data(
@@ -63,36 +64,26 @@ def generate_confusion_matrix(
 def plot_confusion_matrix(
     confusion_matrix: np.ndarray, class_labels: Sequence[str], model_name: str, path: str
 ) -> None:
-    fig, ax = plt.subplots()
-    fig.set_figheight(10)
-    fig.set_figwidth(10)
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(
+        confusion_matrix,
+        annot=True,
+        fmt=".2f",
+        cmap="Blues",
+        xticklabels=class_labels,
+        yticklabels=class_labels,
+        square=True,
+        linewidths=0.5,
+        cbar_kws={"shrink": 0.8}
+    )
 
-    num_classes = len(class_labels)
-
-    ax.imshow(confusion_matrix, cmap="Blues")
-
-    ax.set_xticks(np.arange(num_classes))
-    ax.set_yticks(np.arange(num_classes))
-    ax.set_xticklabels(class_labels)
-    ax.set_yticklabels(class_labels)
-
-    ax.set_xlabel("Predicted Label")
-    ax.set_ylabel("Ground-Truth label")
-    ax.set_title(f"{model_name} Confusion Matrix")
-
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
-
-    for i in range(num_classes):
-        for j in range(num_classes):
-            _ = ax.text(
-                j,
-                i,
-                f"{confusion_matrix[i, j]:.2f}",
-                ha="center",
-                va="center",
-                color="black",
-            )
-    plt.savefig(os.path.join(path, f'{model_name}_confusion_matrix.png'))
+    plt.title(f"{model_name} Confusion Matrix", fontsize=14)
+    plt.xlabel("Predicted Label", fontsize=12)
+    plt.ylabel("True Label", fontsize=12)
+    plt.xticks(rotation=45, ha='right')
+    plt.yticks(rotation=0)
+    plt.tight_layout()
+    plt.savefig(os.path.join(path, f"{model_name}_confusion_matrix.png"))
     plt.show()
 
 def generate_and_plot_confusion_matrix(
@@ -189,36 +180,22 @@ def generate_accuracy_table(
     return accuracy_table
 
 
-def plot_accuracy_table(
-    accuracy_table: np.ndarray, attribute_labels: Sequence[str]
-) -> None:
-    fig, ax = plt.subplots()
-    fig.set_figheight(10)
-    fig.set_figwidth(10)
+def plot_accuracy_table(accuracy_table: np.ndarray, attribute_labels: Sequence[str]) -> None:
+    plt.figure(figsize=(10, 2))
+    sns.heatmap(
+        accuracy_table[np.newaxis, :],
+        annot=True,
+        fmt=".2f",
+        cmap="Greens",
+        xticklabels=attribute_labels,
+        yticklabels=["Accuracy"],
+        cbar=False,
+        linewidths=0.3
+    )
 
-    num_att = len(attribute_labels)
-
-    ax.imshow(accuracy_table[np.newaxis, :], cmap="Blues")
-
-    ax.set_xticks(np.arange(num_att))
-    ax.set_xticklabels(attribute_labels)
-
-    ax.set_xlabel("Attributes")
-    ax.set_ylabel("Accuracy")
-    ax.set_title("Accuracy Table")
-
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
-
-    for i in range(num_att):
-        _ = ax.text(
-            i,
-            0,
-            f"{accuracy_table[i]:.2f}",
-            ha="center",
-            va="center",
-            color="black",
-        )
-
+    plt.title("Attribute-wise Accuracy", fontsize=14)
+    plt.xticks(rotation=45, ha="right")
+    plt.tight_layout()
     plt.show()
 
 
