@@ -6,7 +6,11 @@ import torch
 import torchvision.transforms as transforms
 from utils.utils import compute_accuracy, compute_loss
 from data.Image_Loader import ImageLoader
-from src.models.ResNet.model import MyResNet
+from src.models import (
+    CNN_3D,
+    MyResNet,
+    MyInception,
+)
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
@@ -42,7 +46,7 @@ class Trainer:
     def __init__(
         self,
         data_dir: str,
-        model: Union[MyResNet],
+        model: Union[CNN_3D, MyResNet, MyInception],
         optimizer: Optimizer,
         model_dir: str,
         train_data_transforms: transforms.Compose,
@@ -131,7 +135,7 @@ class Trainer:
         train_acc_meter = AverageMeter("train accuracy")
 
         # loop over each minibatch
-        for (x, y) in self.train_loader:
+        for batch_idx, (x, y) in enumerate(self.train_loader):
             if self.cuda:
                 x = x.cuda()
                 y = y.cuda()
@@ -147,6 +151,14 @@ class Trainer:
             self.optimizer.zero_grad()
             batch_loss.backward()
             self.optimizer.step()
+
+            print(
+                f"Minibatch:{batch_idx + 1}"
+                + f" Train Loss:{batch_loss:.4f}"
+                + f" Val Loss: {batch_loss:.4f}"
+                + f" Train Accuracy: {batch_acc:.4f}"
+                + f" Validation Accuracy: {batch_acc:.4f}"
+            )
 
         return train_loss_meter.avg, train_acc_meter.avg
 
@@ -198,3 +210,33 @@ class Trainer:
         plt.ylabel("Accuracy")
         plt.xlabel("Epochs")
         plt.show()
+
+    def save_plots(self, path):
+        os.makedirs(path, exist_ok=True)
+
+        # Save loss
+        plt.figure()
+        epoch_idxs = range(len(self.train_loss_history))
+
+        plt.plot(epoch_idxs, self.train_loss_history, "-b", label="training")
+        plt.plot(epoch_idxs, self.validation_loss_history, "-r", label="validation")
+        plt.title("Loss history")
+        plt.legend()
+        plt.ylabel("Loss")
+        plt.xlabel("Epochs")
+        plt.savefig(os.path.join(path, f'{self.model.__class__.__name__}_loss_plot.png'))
+        plt.close()
+
+        # Save accuracy
+        plt.figure()
+        epoch_idxs = range(len(self.train_accuracy_history))
+        plt.plot(epoch_idxs, self.train_accuracy_history, "-b", label="training")
+        plt.plot(epoch_idxs, self.validation_accuracy_history, "-r", label="validation")
+        plt.title("Accuracy history")
+        plt.legend()
+        plt.ylabel("Accuracy")
+        plt.xlabel("Epochs")
+        plt.savefig(os.path.join(path, f'{self.model.__class__.__name__}_accuracy_plot.png'))
+        plt.close()
+
+        print(f"Saved training plots to {path}")

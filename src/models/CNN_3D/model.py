@@ -1,8 +1,9 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 class CNN_3D(nn.Module):
-    def __init__(self, num_classes=3): # Pituitary, Meningioma, and Glioma Tumor
+    def __init__(self, inp_size, num_classes=3): # Pituitary, Meningioma, and Glioma Tumor
         super(CNN_3D, self).__init__()
 
         self.conv_layers = nn.Sequential( # Not set up for 3D, just filler for testing
@@ -22,9 +23,14 @@ class CNN_3D(nn.Module):
             nn.MaxPool2d(kernel_size=3)
         )
 
+        # Dynamically calculate fully connected layer node size
+        dummy_input = torch.zeros(1, 1, *inp_size)
+        conv_output = self.conv_layers(dummy_input)
+        flattened_size = conv_output.view(1, -1).shape[1]
+
         self.fc_layers = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(900, 100),
+            nn.Linear(flattened_size, 100),
             nn.ReLU(),
             nn.Linear(100, num_classes)
         )

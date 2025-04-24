@@ -8,7 +8,11 @@ import torch
 import numpy as np
 from PIL import Image
 from typing import Union, Tuple
-from src.models.ResNet.model import MyResNet
+from src.models import (
+    CNN_3D,
+    MyResNet,
+    MyInception,
+)
 
 def compute_accuracy(logits: torch.Tensor, labels: torch.Tensor) -> float:
     best_guesses = torch.argmax(logits, axis=1)
@@ -19,7 +23,7 @@ def compute_accuracy(logits: torch.Tensor, labels: torch.Tensor) -> float:
 
 
 def compute_loss(
-    model: Union[MyResNet],
+    model: Union[CNN_3D, MyResNet, MyInception],
     model_output: torch.Tensor,
     target_labels: torch.Tensor,
     is_normalize: bool = True,
@@ -31,17 +35,19 @@ def compute_loss(
     return loss
 
 def save_trained_model_weights(
-    model: Union[MyResNet], out_dir: str
+    model: Union[CNN_3D, MyResNet, MyInception], out_dir: str
 ) -> None:
     class_name = model.__class__.__name__
     state_dict = model.state_dict()
 
     assert class_name in set(
-        ["MyResNet"]
+        ["CNN_3D", "MyResNet", "MyInception"]
     ), "Please save only supported models"
 
     save_dict = {"class_name": class_name, "state_dict": state_dict}
-    torch.save(save_dict, f"{out_dir}/trained_{class_name}_final.pt")
+    path = f"{out_dir}/trained_{class_name}_final.pt"
+    torch.save(save_dict, path)
+    print(f"Saved training plots to {path}")
 
 def compute_mean_and_std(dir_name: str) -> Tuple[float, float]:
     count = 0
