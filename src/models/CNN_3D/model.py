@@ -1,32 +1,35 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 class CNN_3D(nn.Module):
-    def __init__(self, inp_size, num_classes=3): # Pituitary, Meningioma, and Glioma Tumor
-        super(CNN_3D, self).__init__()
+    def __init__(self, inp_size, num_classes=3):
+        super().__init__()
 
-        self.conv_layers = nn.Sequential( # Not set up for 3D, just filler for testing
-            nn.Conv2d(in_channels=1, out_channels=10, kernel_size=5, padding=2),
-            nn.BatchNorm2d(10),
-            nn.MaxPool2d(kernel_size=3, padding=1),
+        kernel_size_depth = min(inp_size[0], 3)  # ideally use kernel size depth 3, but if n_slices < 3, then need to reduce kernel size depth
+        kernel_size = 5
+        padding_size = (kernel_size - 1) // 2
+
+        self.conv_layers = nn.Sequential( 
+            nn.Conv3d(in_channels=1, out_channels=10, kernel_size=(kernel_size_depth, kernel_size, kernel_size), padding=(0, padding_size, padding_size)),
+            nn.BatchNorm3d(10),
+            nn.MaxPool3d(kernel_size=(kernel_size_depth, kernel_size, kernel_size), padding=(0, padding_size, padding_size)),
             nn.ReLU(),
-            nn.Conv2d(in_channels=10, out_channels=15, kernel_size=5, padding=2),
-            nn.BatchNorm2d(15),
+            nn.Conv3d(in_channels=10, out_channels=15, kernel_size=(kernel_size_depth, kernel_size, kernel_size), padding=(0, padding_size, padding_size)),
+            nn.BatchNorm3d(15),
             nn.ReLU(),
-            nn.Conv2d(in_channels=15, out_channels=20, kernel_size=5, padding=2),
-            nn.BatchNorm2d(20),
+            nn.Conv3d(in_channels=15, out_channels=20, kernel_size=(kernel_size_depth, kernel_size, kernel_size), padding=(0, padding_size, padding_size)),
+            nn.BatchNorm3d(20),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Conv2d(in_channels=20, out_channels=25, kernel_size=5, padding=0),
+            nn.Conv3d(in_channels=20, out_channels=25, kernel_size=(kernel_size_depth, kernel_size, kernel_size), padding=(0, padding_size, padding_size)),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=3)
+            nn.MaxPool3d(kernel_size=(kernel_size_depth, kernel_size, kernel_size), padding=(0, padding_size, padding_size))
         )
 
-        # Dynamically calculate fully connected layer node size
+        # Dynamically calculate the fully connected layer node size based on the output of Conv3D layers
         dummy_input = torch.zeros(1, 1, *inp_size)
         conv_output = self.conv_layers(dummy_input)
-        flattened_size = conv_output.view(1, -1).shape[1]
+        flattened_size = conv_output.view(1, -1).shape[1] 
 
         self.fc_layers = nn.Sequential(
             nn.Flatten(),
@@ -40,7 +43,6 @@ class CNN_3D(nn.Module):
     def forward(self, x):
         x = self.conv_layers(x)
         model_output = self.fc_layers(x)
-        
         return model_output
     
     def count_parameters(self):

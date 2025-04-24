@@ -54,6 +54,7 @@ class Trainer:
         batch_size: int = 100,
         load_from_disk: bool = True,
         cuda: bool = False,
+        n_slices = 1,
     ) -> None:
         self.model_dir = model_dir
 
@@ -65,15 +66,17 @@ class Trainer:
 
         dataloader_args = {"num_workers": 1, "pin_memory": True} if cuda else {}
 
+        is_3d = model.__class__.__name__ == "CNN_3D"
+
         self.train_dataset = ImageLoader(
-            data_dir, split="train", transform=train_data_transforms
+            data_dir, split="train", transform=train_data_transforms, is_3d=is_3d, n_slices=n_slices
         )
         self.train_loader = DataLoader(
             self.train_dataset, batch_size=batch_size, shuffle=True, **dataloader_args
         )
 
         self.val_dataset = ImageLoader(
-            data_dir, split="test", transform=val_data_transforms
+            data_dir, split="test", transform=val_data_transforms, is_3d=is_3d, n_slices=n_slices
         )
         self.val_loader = DataLoader(
             self.val_dataset, batch_size=batch_size, shuffle=True, **dataloader_args
@@ -142,6 +145,11 @@ class Trainer:
 
             n = x.shape[0]
             logits = self.model(x)
+
+            # Necessary for inception
+            if isinstance(logits, tuple):
+                logits = logits[0]
+
             batch_acc = compute_accuracy(logits, y)
             train_acc_meter.update(val=batch_acc, n=n)
 
@@ -193,7 +201,7 @@ class Trainer:
 
         plt.plot(epoch_idxs, self.train_loss_history, "-b", label="training")
         plt.plot(epoch_idxs, self.validation_loss_history, "-r", label="validation")
-        plt.title("Loss history")
+        plt.title(f"{self.model.__class__.__name__} Loss history")
         plt.legend()
         plt.ylabel("Loss")
         plt.xlabel("Epochs")
@@ -205,7 +213,7 @@ class Trainer:
         epoch_idxs = range(len(self.train_accuracy_history))
         plt.plot(epoch_idxs, self.train_accuracy_history, "-b", label="training")
         plt.plot(epoch_idxs, self.validation_accuracy_history, "-r", label="validation")
-        plt.title("Accuracy history")
+        plt.title(f"{self.model.__class__.__name__} Accuracy history")
         plt.legend()
         plt.ylabel("Accuracy")
         plt.xlabel("Epochs")

@@ -1,3 +1,4 @@
+import os
 from typing import Sequence, Tuple
 
 import numpy as np
@@ -60,7 +61,7 @@ def generate_confusion_matrix(
 
 
 def plot_confusion_matrix(
-    confusion_matrix: np.ndarray, class_labels: Sequence[str]
+    confusion_matrix: np.ndarray, class_labels: Sequence[str], model_name: str, path: str
 ) -> None:
     fig, ax = plt.subplots()
     fig.set_figheight(10)
@@ -77,7 +78,7 @@ def plot_confusion_matrix(
 
     ax.set_xlabel("Predicted Label")
     ax.set_ylabel("Ground-Truth label")
-    ax.set_title("Confusion Matrix")
+    ax.set_title(f"{model_name} Confusion Matrix")
 
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 
@@ -93,10 +94,11 @@ def plot_confusion_matrix(
             )
 
     plt.show()
+    plt.savefig(os.path.join(path, f'{model_name}_confusion_matrix.png'))
 
 
 def generate_and_plot_confusion_matrix(
-    model: nn.Module, dataset: ImageLoader, use_cuda: bool = False
+    model: nn.Module, dataset: ImageLoader, path: str, use_cuda: bool = False
 ) -> None:
     targets, predictions, class_labels = generate_confusion_data(
         model, dataset, use_cuda=use_cuda
@@ -108,7 +110,7 @@ def generate_and_plot_confusion_matrix(
         len(class_labels),
     )
 
-    plot_confusion_matrix(confusion_matrix, class_labels)
+    plot_confusion_matrix(confusion_matrix, class_labels, model.__class__.__name__, path)
 
 
 def get_pred_images_for_target(
