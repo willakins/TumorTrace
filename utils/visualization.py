@@ -60,6 +60,7 @@ class Visualizer:
 
     # Print classification report
     def print_classification_report(self, y_true, y_pred):
+        y_true = [int(y) - 1 for y in y_true] # Change to zero indexing to be consistent with train.py's labeling conversion
         report = classification_report(y_true, y_pred, target_names=self.class_names)
         print("\nClassification Report:\n")
         print(report)
