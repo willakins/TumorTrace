@@ -13,6 +13,8 @@ from src.models import (
 )
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
+from sklearn.metrics import classification_report
+import seaborn as sns
 
 
 class AverageMeter(object):
@@ -195,29 +197,54 @@ class Trainer:
         return val_loss_meter.avg, val_acc_meter.avg
 
     def plot_loss_history(self) -> None:
-        """Plots the loss history"""
-        plt.figure()
-        epoch_idxs = range(len(self.train_loss_history))
-
-        plt.plot(epoch_idxs, self.train_loss_history, "-b", label="training")
-        plt.plot(epoch_idxs, self.validation_loss_history, "-r", label="validation")
-        plt.title(f"{self.model.__class__.__name__} Loss history")
-        plt.legend()
-        plt.ylabel("Loss")
+        plt.figure(figsize=(10, 5))
+        sns.lineplot(x=range(len(self.train_loss_history)), y=self.train_loss_history, label="Training", color="tab:red", marker='o')
+        sns.lineplot(x=range(len(self.validation_loss_history)), y=self.validation_loss_history, label="Validation", color="tab:purple", marker='x')
+        plt.title(f"{self.model.__class__.__name__} Loss History", fontsize=14)
         plt.xlabel("Epochs")
+        plt.ylabel("Loss")
+        plt.grid(True, linestyle="--", alpha=0.6)
+        plt.legend()
+        plt.tight_layout()
         plt.show()
 
     def plot_accuracy(self) -> None:
-        """Plots the accuracy history"""
-        plt.figure()
-        epoch_idxs = range(len(self.train_accuracy_history))
-        plt.plot(epoch_idxs, self.train_accuracy_history, "-b", label="training")
-        plt.plot(epoch_idxs, self.validation_accuracy_history, "-r", label="validation")
-        plt.title(f"{self.model.__class__.__name__} Accuracy history")
-        plt.legend()
-        plt.ylabel("Accuracy")
+        plt.figure(figsize=(10, 5))
+        sns.lineplot(x=range(len(self.train_accuracy_history)), y=self.train_accuracy_history, label="Training", color="tab:blue", marker='o')
+        sns.lineplot(x=range(len(self.validation_accuracy_history)), y=self.validation_accuracy_history, label="Validation", color="tab:green", marker='x')
+        plt.title(f"{self.model.__class__.__name__} Accuracy History", fontsize=14)
         plt.xlabel("Epochs")
+        plt.ylabel("Accuracy")
+        plt.grid(True, linestyle="--", alpha=0.6)
+        plt.legend()
+        plt.tight_layout()
         plt.show()
+
+    def print_classification_report(self) -> None:
+        self.model.eval()
+        all_preds = []
+        all_labels = []
+
+        with torch.no_grad():
+            for x, y in self.val_loader:
+                if self.cuda:
+                    x = x.cuda()
+                    y = y.cuda()
+
+                logits = self.model(x)
+                if isinstance(logits, tuple):
+                    logits = logits[0]
+
+                preds = torch.argmax(logits, dim=1)
+                all_preds.extend(preds.cpu().tolist())
+                all_labels.extend(y.cpu().tolist())
+
+        # Adjust labels if needed (e.g., 1-indexed to 0-indexed)
+        all_labels = [label - 1 for label in all_labels]
+
+        report = classification_report(all_labels, all_preds, target_names=['Glioma', 'Meningioma', 'Pituitary'])
+        print("\nClassification Report:\n")
+        print(report)
 
     def save_plots(self, path):
         os.makedirs(path, exist_ok=True)

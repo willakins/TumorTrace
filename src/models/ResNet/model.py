@@ -14,7 +14,9 @@ class MyResNet(nn.Module):
 
         self.fc_layers = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(512, num_classes),
+            nn.Linear(512, 100),
+            nn.ReLU(),
+            nn.Linear(100, num_classes)
         )
 
         self.loss_criterion = nn.CrossEntropyLoss(reduction='mean')
