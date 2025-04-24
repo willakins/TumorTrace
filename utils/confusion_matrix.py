@@ -94,7 +94,6 @@ def plot_confusion_matrix(
             )
     plt.savefig(os.path.join(path, f'{model_name}_confusion_matrix.png'))
     plt.show()
-    plt.savefig(os.path.join(path, f'{model_name}_confusion_matrix.png'))
 
 def generate_and_plot_confusion_matrix(
     model: nn.Module, dataset: ImageLoader, path: str, use_cuda: bool = False
