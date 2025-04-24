@@ -55,7 +55,7 @@ def check_kaggle_auth():
     else:
         print("[Info] Kaggle API token found.")
 
-def prepare_dataset(raw_data_path: str, pickle_path: str, processed_data_path: str) -> Tuple[float, float]:
+def prepare_dataset(raw_data_path: str, pickle_path: str, processed_data_path: str, n_slices: int) -> Tuple[float, float]:
     # Step 0: Make sure the user has a Kaggle API key
     check_kaggle_auth()
 
@@ -71,7 +71,7 @@ def prepare_dataset(raw_data_path: str, pickle_path: str, processed_data_path: s
     # Step 2: Convert pickle to folder structure
     if not os.path.exists(processed_data_path):
         print("[INFO] Converting pickle to folder structure...")
-        convert_pickle_to_folder(pickle_path, processed_data_path)
+        convert_pickle_to_folder(pickle_path, processed_data_path, n_slices)
     else:
         print("[INFO] Processed data directory already exists. Skipping conversion.")
 
@@ -89,27 +89,41 @@ def prepare_dataset(raw_data_path: str, pickle_path: str, processed_data_path: s
     return dataset_mean, dataset_std
 
 
-def convert_pickle_to_folder(pickle_path, output_dir):
+def convert_pickle_to_folder(pickle_path, output_dir, n_slices):
     if os.path.exists(output_dir):
         print(f"[INFO] Skipping conversion. Folder '{output_dir}' already exists.")
         return
-    
+
     with open(pickle_path, 'rb') as f:
         data = pickle.load(f)  # List of (image, label) tuples
 
-    images, labels = zip(*data)
-    X_train, X_test, y_train, y_test = train_test_split(images, labels, test_size=0.2, stratify=labels)
-    
-    def save(split, images, labels):
+    # Group into 3D datapoints (groups of n_slices)
+    grouped_data = [data[i:i + n_slices] for i in range(0, len(data), n_slices)]
+
+    # Verify all groups are the correct length
+    grouped_data = [group for group in grouped_data if len(group) == n_slices]
+
+    # Get the label for each group (assumes all slices in group share the same label)
+    group_labels = [group[0][1] for group in grouped_data]
+
+    # Split groups, not individual images
+    train_groups, test_groups = train_test_split(
+        grouped_data, test_size=0.2, stratify=group_labels, random_state=42
+    )
+
+    def save(split_name, groups):
         class_names = ["Pituitary", "Meningioma", "Glioma"]
-        for i, (img, label) in enumerate(zip(images, labels)):
-            label_dir = os.path.join(output_dir, split, class_names[label - 1])
-            os.makedirs(label_dir, exist_ok=True)
+        idx = 0
+        for group in groups:
+            for img, label in group:
+                label_dir = os.path.join(output_dir, split_name, class_names[label - 1])
+                os.makedirs(label_dir, exist_ok=True)
 
-            # Normalize and save image as PNG
-            img = (img - np.min(img)) / (np.max(img) - np.min(img)) * 255
-            img = Image.fromarray(np.uint8(img)).convert("L")
-            img.save(os.path.join(label_dir, f"img_{i}.png"))
+                # Normalize and save image
+                img = (img - np.min(img)) / (np.max(img) - np.min(img)) * 255
+                img = Image.fromarray(np.uint8(img)).convert("L")
+                img.save(os.path.join(label_dir, f"img_{idx}.png"))
+                idx += 1
 
-    save("train", X_train, y_train)
-    save("test", X_test, y_test)
+    save("train", train_groups)
+    save("test", test_groups)

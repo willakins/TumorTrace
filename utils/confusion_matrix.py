@@ -4,7 +4,7 @@ from typing import Sequence, Tuple
 import numpy as np
 import torch
 from matplotlib import pyplot as plt
-from data.Image_Loader import ImageLoader
+from data.image_loader import ImageLoader
 from torch import nn
 from torch.utils.data import DataLoader, Subset
 
@@ -92,10 +92,8 @@ def plot_confusion_matrix(
                 va="center",
                 color="black",
             )
-
-    plt.show()
     plt.savefig(os.path.join(path, f'{model_name}_confusion_matrix.png'))
-
+    plt.show()
 
 def generate_and_plot_confusion_matrix(
     model: nn.Module, dataset: ImageLoader, path: str, use_cuda: bool = False

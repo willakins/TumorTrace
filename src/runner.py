@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import torch
 import torchvision.transforms as transforms
 from utils.utils import compute_accuracy, compute_loss
-from data.Image_Loader import ImageLoader
+from data.image_loader import ImageLoader
 from src.models import (
     CNN_3D,
     MyResNet,

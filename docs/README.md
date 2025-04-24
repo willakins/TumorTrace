@@ -21,45 +21,42 @@ Magnetic Resonance Imaging (MRI) is an essential tool in medical diagnostics. Ho
 
 ```plaintext
 TumorTrace/
-│── config/                    # Different config files
-│   ├── config.yaml            # Main config file
-│
 │── data/                      # Contains datasets and preprocessing scripts
-│   ├── raw/                   # empty
-│   ├── processed/             # Preprocessed MRI scans (after transformations)
-|   ├── archive/	       # Original MRI dataset (e.g., downloaded from Kaggle)
-│   ├── data_preprocessing.py  # Script to preprocess MRI images
+│   ├── raw/                   # Original MRI dataset (e.g., downloaded from Kaggle)
+│   ├── processed/             # Preprocessed MRI scans
+│   │    ├── test/             # mri images used for testing
+│   │    └── train/            # mri images used for training
+│   ├── data_transforms.py     # Functions that allow for creation of synthetic data
+|   └── image_loader.py        # Dataset class for mri images
 |
 │── docs/                      # Documentation and reports
 │   ├── proposal.pdf           # Original project proposal
-│   ├── README.md              # Project overview and instructions
+│   ├── midterm.pdf            # Midterm project checkpoint
+│   └── README.md              # Project overview and instructions
 |
-│── environments/                   # Stores any environment files used
-│   ├── environment.yaml            # Main environment file to run ipynb
-|
-│── models/                    # Contains different model implementations
-│   ├── 3D_CNN/                # 3D Convolutional Neural Network implementation
-│   │   ├── model.py           # Model architecture
-│   │   ├── train.py           # Training script
-│   │   ├── checkpoints/       # Saved model weights
-│   ├── Inception/             # Inception model implementation
-│   │   ├── model.py
-│   │   ├── train.py
-│   │   ├── checkpoints/
-│   ├── ResNet/                # ResNet model implementation
-│   │   ├── model.py
-│   │   ├── train.py
-│   │   ├── checkpoints/
-|
-│── notebooks/                      # Stores ipynb that we use
-│   ├── main.ipynb                  # Main notebook for running models
+│── environments/              # Stores any environment files used
+│   └── environment.yaml       # Main environment file to run ipynb
+│
+│── notebooks/                 # Stores ipynb that we use
+│   └── main.ipynb             # Main notebook for running models
 │
 │── results/                   # Stores output reports, visualizations, and analysis
-│   ├── figures/               # Plots, confusion matrices, loss curves
-│   ├── performance_metrics.csv# Stores accuracy, F1-score, etc.
 │
+│── src/                       # Contains different model implementations
+│   ├── models/                # 3D Convolutional Neural Network implementation
+│   │   ├── CNN_3D/            # Home for all files related to 3D convolutional neural network model
+│   │   │   └── model.py       # Class implementation of the model
+│   │   ├── ResNet/            # Home for all files related to ResNet model
+│   │   │   └── model.py       # Class implementation of the model
+│   │   ├── Inception/         # Home for all files related to Inception model
+│   │   │   └── model.py       # Class implementation of the model
+│   ├── optimizer.py           # Helper function for creating an optimizer
+│   └── runner.py              # Class for training the models
+|
 │── utils/                     # Utility functions
-│   ├── visualization.py       # Functions for visualizing MRI scans
+│   ├── confusion_matrix.py    # Functions for creating & visualizing confusion matrices
+│   ├── dataset_utils.py       # Functions for retrieving and processing the dataset
+│   └── utils.py               # Misc. general use functions
 │
 │── .gitignore                 # Git files not to track
 ```
@@ -71,49 +68,14 @@ TumorTrace/
    git clone https://github.com/yourusername/TumorTrace.git
    cd TumorTrace
    ```
-2. **Set up a virtual environment (optional but recommended)**:
+2. **Install dependencies**:
    ```sh
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   conda env create -f environments/environment.yaml
    ```
-3. **Install dependencies**:
+3. **Activate Environment**:
    ```sh
-   pip install -r requirements.txt
+   conda activate TumorTrace           
    ```
-
-## Usage
-
-### Preprocess Data
-
-Run the following command to preprocess the MRI scans:
-
-```sh
-python data/data_preprocessing.py --input data/raw --output data/processed
-```
-
-### Train Model
-
-To train the deep learning models:
-
-```sh
-python models/desiredmodel/train.py --config config.yaml
-```
-
-### Evaluate Model
-
-To evaluate a trained model:
-
-```sh
-python models/desiredmodel/evaluate.py
-```
-
-### Run Inference
-
-To make predictions on new MRI scans:
-
-```sh
-python models/desiredmodel/inference.py --image path/to/image
-```
 
 ## Dataset
 
