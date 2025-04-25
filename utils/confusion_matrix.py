@@ -77,6 +77,38 @@ def plot_confusion_matrix(
     plt.savefig(os.path.join(path, f"{model_name}_confusion_matrix.png"))
     plt.show()
 
+def get_pred_images_for_target(
+    model: nn.Module,
+    dataset: ImageLoader,
+    predicted_class: int,
+    target_class: int,
+    use_cuda: bool = False,
+) -> Sequence[str]:
+    model.eval()
+    dataset_list = dataset.dataset
+    indices = []
+    image_paths = []
+    for i, (image_path, class_label) in enumerate(dataset_list):
+        if class_label == target_class:
+            indices.append(i)
+            image_paths.append(image_path)
+    subset = Subset(dataset, indices)
+    dataloader_args = {"num_workers": 1, "pin_memory": True} if use_cuda else {}
+    loader = DataLoader(subset, batch_size=32, shuffle=False, **dataloader_args)
+    preds = []
+    for i, (inp, _) in enumerate(loader):
+        if use_cuda:
+            inp = inp.cuda()
+        logits = model(inp)
+        p = torch.argmax(logits, dim=1)
+        preds.append(p)
+    predictions = torch.cat(preds, dim=0).cpu().tolist()
+    valid_image_paths = [
+        image_paths[i] for i, p in enumerate(predictions) if p == predicted_class
+    ]
+    model.train()
+    return valid_image_paths
+
 
 def generate_and_plot_confusion_matrix(
     model: nn.Module, dataset: ImageLoader, path: str, use_cuda: bool = False
