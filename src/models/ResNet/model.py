@@ -7,17 +7,23 @@ class MyResNet(nn.Module):
 
         # Use the new 'weights' argument
         pretrained_model = resnet18(weights=ResNet18_Weights.DEFAULT)
-        for param in pretrained_model.parameters():
-            param.requires_grad = False
+        for name, param in pretrained_model.named_parameters():
+            if "layer4" in name or "fc" in name:
+                param.requires_grad = True
+            else:
+                param.requires_grad = False
 
         self.conv_layers = nn.Sequential(*list(pretrained_model.children())[:-1])
 
         self.fc_layers = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(512, 128),
+            nn.Linear(512, 1024),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(128, num_classes)
+            nn.Linear(1024, 512),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(512, num_classes)
         )
 
         self.loss_criterion = nn.CrossEntropyLoss(reduction='mean')
