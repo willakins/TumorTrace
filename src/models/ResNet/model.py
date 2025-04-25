@@ -8,7 +8,7 @@ class MyResNet(nn.Module):
         # Use the new 'weights' argument
         pretrained_model = resnet18(weights=ResNet18_Weights.DEFAULT)
         for name, param in pretrained_model.named_parameters():
-                param.requires_grad = False
+            param.requires_grad = False
 
         self.conv_layers = nn.Sequential(*list(pretrained_model.children())[:-1])
 
