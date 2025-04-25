@@ -41,39 +41,35 @@ class ImageLoader(Dataset):
         ])
         return {name: idx for idx, name in enumerate(class_names)}
 
-    def load_imagepaths_with_labels(self, class_labels: Dict[str, int]) -> List[Tuple[str, int]]:
+    def load_imagepaths_with_labels(self, class_labels):
+        # collect and sort all slices per class
         paths = []
         for class_name, label in class_labels.items():
             class_folder = os.path.join(self.curr_folder, class_name)
-            for fname in os.listdir(class_folder):
-                if fname.endswith(".png") or fname.endswith(".jpg"):
-                    paths.append((os.path.join(class_folder, fname), label))
+            fpaths = sorted([
+                os.path.join(class_folder, fn)
+                for fn in os.listdir(class_folder)
+                if fn.lower().endswith((".png", ".jpg"))
+            ])
+            # group into volumes of n_slices
+            for i in range(0, len(fpaths), self.n_slices):
+                group = fpaths[i:i+self.n_slices]
+                if len(group) == self.n_slices:
+                    paths.append((group, label))
         return paths
 
     def load_img_from_path(self, path: str) -> Image:
         return Image.open(path).convert(mode='L')  # grayscale
 
-    def __getitem__(self, index: int) -> Tuple:
-        if (self.is_3d):
-            paths_and_labels = self.dataset[index * self.n_slices:min(index*self.n_slices + self.n_slices, len(self.dataset))]
-            paths = [p for p, _ in paths_and_labels]
-            label = paths_and_labels[0][1]
-            imgs = [self.load_img_from_path(path) for path in paths]
-
+    def __getitem__(self, index):
+        if self.is_3d:
+            paths, label = self.dataset[index]
+            imgs = [self.load_img_from_path(p) for p in paths]
             if self.transform:
                 imgs = [self.transform(img) for img in imgs]
             else:
                 imgs = [transforms.ToTensor()(img) for img in imgs]
-
-            # Stack into a single tensor: [n_slices, H, W]
-            if (self.n_slices > 1):
-                img_tensor = torch.stack(imgs, dim=0)
-                if img_tensor.shape[0] < self.n_slices:
-                    padding = self.n_slices - img_tensor.shape[0]
-                    pad_tensor = torch.zeros(padding, *img_tensor.shape[1:])
-                    img_tensor = torch.cat([img_tensor, pad_tensor], dim=0)
-            else:
-                img_tensor = imgs[0].unsqueeze(0)
+            img_tensor = torch.stack(imgs, dim=0)  # [n_slices, H, W]
             return img_tensor, label
         else:
             path, label = self.dataset[index]
