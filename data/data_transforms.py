@@ -52,3 +52,15 @@ def get_all_transforms(
         transforms.Normalize(mean=pixel_mean, std=pixel_std),
     ])
     return all_transforms
+
+def get_3d_transforms(inp_size: Tuple[int, int], mean: float, std: float) -> transforms.Compose:
+    return transforms.Compose([
+        transforms.Pad(padding=int(0.1 * inp_size[0])),
+        transforms.RandomCrop(inp_size),
+        transforms.RandomResizedCrop(inp_size, scale=(0.6, 1.0), ratio=(0.8, 1.2)),
+        transforms.RandomRotation(degrees=25),
+        transforms.RandomHorizontalFlip(p=0.5),
+        transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.0, hue=0.0),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[mean], std=[std]),
+    ])
