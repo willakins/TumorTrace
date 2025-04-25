@@ -57,7 +57,7 @@ def check_kaggle_auth():
 
 def prepare_dataset(raw_data_path: str, pickle_path: str, processed_data_path: str, n_slices: int) -> Tuple[float, float]:
     # Step 0: Make sure the user has a Kaggle API key
-    #check_kaggle_auth()
+    check_kaggle_auth()
 
     # Step 1: Download raw dataset from Kaggle if needed
     if not os.path.exists(raw_data_path) or not os.listdir(raw_data_path):
