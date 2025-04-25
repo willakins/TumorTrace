@@ -9,8 +9,8 @@ def get_optimizer(
     model: torch.nn.Module, config: Dict[str, Any]
 ) -> torch.optim.Optimizer:
     optimizer_type = config.get("optimizer_type", "sgd")
-    learning_rate = config.get("lr", 1e-3)
-    weight_decay = config.get("weight_decay", 1e-5)
+    learning_rate = config.get("lr", 1e-4)
+    weight_decay = config.get("weight_decay", 1e-4)
 
     if optimizer_type.lower() == "sgd":
         optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay)

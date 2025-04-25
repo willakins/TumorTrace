@@ -145,6 +145,11 @@ class Trainer:
                 x = x.cuda()
                 y = y.cuda()
 
+            # for 3D-CNN: data comes in as [N, n_slices, 1, H, W]
+            # we need [N, in_channels=1, depth=n_slices, H, W]
+            if isinstance(self.model, CNN_3D):
+                x = x.permute(0, 2, 1, 3, 4)
+
             n = x.shape[0]
             logits = self.model(x)
 
@@ -179,20 +184,26 @@ class Trainer:
         val_loss_meter = AverageMeter("val loss")
         val_acc_meter = AverageMeter("val accuracy")
 
-        # loop over whole val set
-        for (x, y) in self.val_loader:
-            if self.cuda:
-                x = x.cuda()
-                y = y.cuda()
+        with torch.no_grad():
+            # loop over whole val set
+            for (x, y) in self.val_loader:
+                if self.cuda:
+                    x = x.cuda()
+                    y = y.cuda()
 
-            n = x.shape[0]
-            logits = self.model(x)
+                if isinstance(self.model, CNN_3D):
+                    x = x.permute(0, 2, 1, 3, 4)
 
-            batch_acc = compute_accuracy(logits, y)
-            val_acc_meter.update(val=batch_acc, n=n)
+                n = x.shape[0]
+                logits = self.model(x)
 
-            batch_loss = compute_loss(self.model, logits, y, is_normalize=True)
-            val_loss_meter.update(val=float(batch_loss.cpu().item()), n=n)
+                batch_acc = compute_accuracy(logits, y)
+                val_acc_meter.update(val=batch_acc, n=n)
+
+                batch_loss = compute_loss(self.model, logits, y, is_normalize=True)
+                val_loss_meter.update(val=float(batch_loss.cpu().item()), n=n)
+
+        self.model.train()
 
         return val_loss_meter.avg, val_acc_meter.avg
 
