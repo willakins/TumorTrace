@@ -13,7 +13,7 @@ from src.models import (
 )
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, f1_score
 import seaborn as sns
 
 
@@ -220,7 +220,9 @@ class Trainer:
         plt.tight_layout()
         plt.show()
 
-    def print_classification_report(self) -> None:
+    from sklearn.metrics import classification_report, f1_score
+
+    def print_classification_report(self) -> float:
         self.model.eval()
         all_preds = []
         all_labels = []
@@ -238,13 +240,20 @@ class Trainer:
                 preds = torch.argmax(logits, dim=1)
                 all_preds.extend(preds.cpu().tolist())
                 all_labels.extend(y.cpu().tolist())
+                
+        # Filter to only known class indices if needed
+        valid_classes = [0, 1, 2]
+        report = classification_report(
+            all_labels, all_preds,
+            labels=valid_classes,
+            target_names=['Glioma', 'Meningioma', 'Pituitary'],
+            zero_division=0
+        )
+        macro_f1 = f1_score(all_labels, all_preds, labels=valid_classes, average='macro', zero_division=0)
 
-        # Adjust labels if needed (e.g., 1-indexed to 0-indexed)
-        all_labels = [label - 1 for label in all_labels]
-
-        report = classification_report(all_labels, all_preds, target_names=['Glioma', 'Meningioma', 'Pituitary'])
         print("\nClassification Report:\n")
         print(report)
+        print(f"Macro F1 Score: {macro_f1:.4f}")
 
     def save_plots(self, path):
         os.makedirs(path, exist_ok=True)
