@@ -16,6 +16,7 @@ class MyResNet(nn.Module):
             nn.Flatten(),
             nn.Linear(512, 100),
             nn.ReLU(),
+            nn.Dropout(0.5),
             nn.Linear(100, num_classes)
         )
 
