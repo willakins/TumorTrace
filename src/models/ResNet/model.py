@@ -1,39 +1,45 @@
 import torch.nn as nn
-from torchvision.models import resnet18, ResNet18_Weights
+import torchvision.models as models
+import random
 
 class MyResNet(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
 
-        # Use the new 'weights' argument
-        pretrained_model = resnet18(weights=ResNet18_Weights.DEFAULT)
-        for name, param in pretrained_model.named_parameters():
-            if "layer4" in name or "fc" in name:
-                param.requires_grad = True
-            else:
-                param.requires_grad = False
+        self.resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+        unfreeze_layers = [
+            self.resnet.layer4
+        ]
 
-        self.conv_layers = nn.Sequential(*list(pretrained_model.children())[:-1])
+        # Freeze all parameters in the resnet model
+        for param in self.resnet.parameters():
+            param.requires_grad = False
 
-        self.fc_layers = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(512, 1024),
+        # Unfreeze specific layers
+        for layer in unfreeze_layers:
+            for param in layer.parameters():
+                if random.random() < 0.1: # Reduces params from 8 mil to 2 mil probably (pun intended)
+                    param.requires_grad = True
+
+        self.resnet.fc = nn.Sequential(
+            nn.Linear(512, 128),
             nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(1024, 512),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(512, num_classes)
+            nn.Dropout(0.3),
+            nn.Linear(128, num_classes)
         )
+
+        for param in self.resnet.fc.parameters():
+            param.requires_grad = True
 
         self.loss_criterion = nn.CrossEntropyLoss(reduction='mean')
 
     def forward(self, x):
         if x.shape[1] == 1:  # Grayscale image with 1 channel (maybe unnecessary)
             x = x.repeat(1, 3, 1, 1)
-        x = self.conv_layers(x)
-        model_output = self.fc_layers(x)
-        return model_output
+        out = self.resnet(x)
+        return out
 
     def count_parameters(self):
-        return sum(p.numel() for p in self.conv_layers.parameters()) + sum(p.numel() for p in self.fc_layers.parameters())
+        # Count parameters for the entire model
+        total_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
+        return total_params
