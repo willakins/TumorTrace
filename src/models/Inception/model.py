@@ -6,10 +6,36 @@ class MyInception(nn.Module):
         super().__init__()
 
 
-        self.inception = models.inception_v3(weights='DEFAULT', aux_logits=True)
-        num_features = self.inception.fc.in_features
-        self.inception.fc = nn.Linear(num_features, num_classes)
-        self.dropout = nn.Dropout(0.1)
+        self.inception = models.inception_v3(weights=models.inception_v3(weights='DEFAULT'), aux_logits=True)
+        # List of layers to unfreeze
+        unfreeze_layers = [
+            self.inception.Mixed_6a
+        ]
+
+        # Freeze all parameters in the inception model
+        for param in self.inception.parameters():
+            param.requires_grad = False 
+
+        # Unfreeze specific layers
+        for layer in unfreeze_layers:
+            for param in layer.parameters():
+                param.requires_grad = True
+
+        
+        
+        self.inception.fc = nn.Sequential(
+            nn.Linear(2048, 128),
+            nn.ReLU(),
+            nn.Linear(128, num_classes)
+        )
+
+        for param in self.inception.fc.parameters():
+            param.requires_grad = True
+
+        if self.inception.aux_logits:
+            for param in self.inception.AuxLogits.fc.parameters():
+                param.requires_grad = True    
+        self.dropout = nn.Dropout(0.125)
         
         self.loss_criterion = nn.CrossEntropyLoss(reduction='mean')
 
