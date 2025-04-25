@@ -13,7 +13,6 @@ Magnetic Resonance Imaging (MRI) is an essential tool in medical diagnostics. Ho
 
 - **Deep Learning-Based Classification**: Utilizes 3D CNNs, Inception, and ResNet models to classify MRI scans.
 - **Preprocessing Pipeline**: Converts groups of 2D MRI slices into 3D data points for more accurate classification.
-- **Cross-Validation**: Implements 5-fold cross-validation for robust evaluation.
 - **Performance Metrics**: Evaluates models using accuracy, F1-score, and confusion matrices.
 - **Ablation Studies**: Analyzes the impact of different preprocessing techniques, architecture choices, and hyperparameters.
 
@@ -76,6 +75,8 @@ TumorTrace/
    ```sh
    conda activate TumorTrace           
    ```
+4. **Running The Models**:
+   Open main.ipynb and run all cells -- make sure you have a kaggle API token.
 
 ## Dataset
 
