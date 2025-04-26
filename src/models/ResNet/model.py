@@ -6,7 +6,7 @@ class MyResNet(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
 
-        self.resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+        self.resnet = models.resnet18(pretrained=True)
         unfreeze_layers = [
             self.resnet.layer4
         ]
