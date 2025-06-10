@@ -89,6 +89,6 @@ Medical AI models must prioritize safety, accuracy, and transparency. To mitigat
 
 ## Contributors
 
-- **Jimmy Vu** – TBD
-- **William Akins** – TBD
-- **Chen Zhang** – TBD
+- **Jimmy Vu** – Inception Model, helper for 3D CNN
+- **William Akins** – ResNet Model, Jupyter notebook, Runner Class, Preprocessing Algorithms
+- **Chen Zhang** – 3D CNN, Visualization helpers
