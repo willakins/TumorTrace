@@ -170,9 +170,7 @@ class Trainer:
             print(
                 f"Minibatch:{batch_idx + 1}"
                 + f" Train Loss:{batch_loss:.4f}"
-                + f" Val Loss: {batch_loss:.4f}"
                 + f" Train Accuracy: {batch_acc:.4f}"
-                + f" Validation Accuracy: {batch_acc:.4f}"
             )
 
         return train_loss_meter.avg, train_acc_meter.avg
