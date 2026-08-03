@@ -1,94 +1,134 @@
-# Diagnosing Patients Through Magnetic Resonance Imaging
+<div align="center">
 
-## Team Name: TumorTrace
+# TumorTrace
 
-**Team Members:** Jimmy Vu, William Akins, Chen Zhang
-**Date:** February 10th, 2025
+### Comparing deep learning approaches to brain tumor classification from MRI scans
 
-## Project Overview
+[![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](../environments/environment.yaml)
+[![PyTorch 2.1](https://img.shields.io/badge/PyTorch-2.1-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![Research Prototype](https://img.shields.io/badge/status-research%20prototype-6f42c1)](#responsible-use)
 
-Magnetic Resonance Imaging (MRI) is an essential tool in medical diagnostics. However, analyzing MRI scans for accurate diagnoses requires significant expertise and time. This project aims to develop a deep learning-based model to assist in diagnosing medical conditions from MRI scans, specifically focusing on brain tumor classification. By leveraging publicly available MRI datasets, we seek to improve the efficiency and accuracy of medical image analysis.
+**87.8% validation accuracy · 3 model families · 3 tumor classes · 1 reproducible workflow**
 
-## Features
+</div>
 
-- **Deep Learning-Based Classification**: Utilizes 3D CNNs, Inception, and ResNet models to classify MRI scans.
-- **Preprocessing Pipeline**: Converts groups of 2D MRI slices into 3D data points for more accurate classification.
-- **Performance Metrics**: Evaluates models using accuracy, F1-score, and confusion matrices.
-- **Ablation Studies**: Analyzes the impact of different preprocessing techniques, architecture choices, and hyperparameters.
+TumorTrace is an open research project that benchmarks three deep learning strategies for classifying **glioma**, **meningioma**, and **pituitary tumors** in brain MRI images. It brings a custom 3D CNN and two transfer-learning baselines into one PyTorch pipeline, making it easy to compare how each architecture learns, performs, and fails.
 
-## Directory Structure
+> TumorTrace is an educational research prototype—not a medical device or a substitute for clinical judgment.
 
-```plaintext
-TumorTrace/
-│── data/                      # Contains datasets and preprocessing scripts
-│   ├── raw/                   # Original MRI dataset (e.g., downloaded from Kaggle)
-│   ├── processed/             # Preprocessed MRI scans
-│   │    ├── test/             # mri images used for testing
-│   │    └── train/            # mri images used for training
-│   ├── data_transforms.py     # Functions that allow for creation of synthetic data
-|   └── image_loader.py        # Dataset class for mri images
-|
-│── docs/                      # Documentation and reports
-│   ├── proposal.pdf           # Original project proposal
-│   ├── midterm.pdf            # Midterm project checkpoint
-│   └── README.md              # Project overview and instructions
-|
-│── environments/              # Stores any environment files used
-│   └── environment.yaml       # Main environment file to run ipynb
-│
-│── notebooks/                 # Stores ipynb that we use
-│   └── main.ipynb             # Main notebook for running models
-│
-│── results/                   # Stores output reports, visualizations, and analysis
-│
-│── src/                       # Contains different model implementations
-│   ├── models/                # 3D Convolutional Neural Network implementation
-│   │   ├── CNN_3D/            # Home for all files related to 3D convolutional neural network model
-│   │   │   └── model.py       # Class implementation of the model
-│   │   ├── ResNet/            # Home for all files related to ResNet model
-│   │   │   └── model.py       # Class implementation of the model
-│   │   ├── Inception/         # Home for all files related to Inception model
-│   │   │   └── model.py       # Class implementation of the model
-│   ├── optimizer.py           # Helper function for creating an optimizer
-│   └── runner.py              # Class for training the models
-|
-│── utils/                     # Utility functions
-│   ├── confusion_matrix.py    # Functions for creating & visualizing confusion matrices
-│   ├── dataset_utils.py       # Functions for retrieving and processing the dataset
-│   └── utils.py               # Misc. general use functions
-│
-│── .gitignore                 # Git files not to track
+## Why TumorTrace?
+
+- **Compare architectures fairly.** Train and evaluate a custom 3D CNN, ResNet18, and Inception v3 through the same workflow.
+- **Go beyond a single score.** Explore accuracy and loss curves, per-class precision and recall, macro F1 scores, confusion matrices, and misclassified examples.
+- **Reproduce the experiment.** Download and prepare the public dataset, apply augmentations, train models, and generate evaluation artifacts from one notebook.
+- **Start from working checkpoints.** Inspect the included trained weights or retrain each architecture with your own configuration.
+
+## Results at a glance
+
+Results below come from the recorded run in [`notebooks/main.ipynb`](../notebooks/main.ipynb) on a 613-image held-out split.
+
+| Model | Approach | Trainable parameters | Validation accuracy | Macro F1 |
+| --- | --- | ---: | ---: | ---: |
+| **3D CNN** | Custom residual 3D convolutions | 2,758,115 | **87.8%** | **0.8644** |
+| **Inception v3** | ImageNet transfer learning | 2,447,598 | 85.6% | 0.8257 |
+| **ResNet18** | ImageNet transfer learning | 66,051 | 85.2% | 0.8291 |
+
+The custom 3D CNN delivered the strongest overall result in this experiment, with the highest validation accuracy and macro F1 score. The transfer-learning models remained competitive while fine-tuning fewer parameters than a full network.
+
+<table>
+  <tr>
+    <td align="center"><strong>3D CNN accuracy</strong></td>
+    <td align="center"><strong>3D CNN confusion matrix</strong></td>
+  </tr>
+  <tr>
+    <td><img src="../results/CNN_3D_accuracy_plot.png" alt="3D CNN training and validation accuracy curves"></td>
+    <td><img src="../results/CNN_3D_confusion_matrix.png" alt="3D CNN confusion matrix"></td>
+  </tr>
+</table>
+
+See every saved chart and error-analysis image in [`results/`](../results/).
+
+## How it works
+
+```text
+Kaggle MRI dataset
+        ↓
+Download and preprocessing
+        ↓
+Train/test split and augmentation
+        ↓
+3D CNN · ResNet18 · Inception v3
+        ↓
+Accuracy · Macro F1 · Confusion matrices · Error analysis
 ```
 
-## Installation & Setup
+The preprocessing pipeline converts the source data into a class-based directory structure, computes dataset normalization statistics, and supports grouping adjacent MRI slices for 3D inputs. The shared trainer then handles optimization, checkpointing, validation, and reporting for all three architectures.
 
-1. **Clone the repository**:
-   ```sh
-   git clone https://github.com/yourusername/TumorTrace.git
-   cd TumorTrace
-   ```
-2. **Install dependencies**:
-   ```sh
-   conda env create -f environments/environment.yaml
-   ```
-3. **Activate Environment**:
-   ```sh
-   conda activate TumorTrace           
-   ```
-4. **Running The Models**:
-   Open main.ipynb and run all cells -- make sure you have a kaggle API token.
+## Quick start
 
-## Dataset
+### 1. Clone the project
 
-We use a publicly available brain MRI dataset from Kaggle:
-[Brain Tumor Classification MRI Images](https://www.kaggle.com/datasets/jarvisgroot/brain-tumor-classification-mri-images)
+```bash
+git clone https://github.com/willakins/TumorTrace.git
+cd TumorTrace
+```
 
-## Ethical Considerations
+### 2. Create the environment
 
-Medical AI models must prioritize safety, accuracy, and transparency. To mitigate automation bias and misdiagnosis risks, our model provides probability-based results rather than definitive diagnoses. This ensures that medical professionals remain the primary decision-makers.
+```bash
+conda env create -f environments/environment.yaml
+conda activate TumorTrace
+```
 
-## Contributors
+### 3. Configure Kaggle access
 
-- **Jimmy Vu** – Inception Model, helper for 3D CNN
-- **William Akins** – ResNet Model, Jupyter notebook, Runner Class, Preprocessing Algorithms
-- **Chen Zhang** – 3D CNN, Visualization helpers
+Download a Kaggle API token and place `kaggle.json` in `~/.kaggle/`. On macOS or Linux, restrict the file permissions:
+
+```bash
+chmod 600 ~/.kaggle/kaggle.json
+```
+
+The notebook downloads the [Brain Tumor Classification MRI Images dataset](https://www.kaggle.com/datasets/jarvisgroot/brain-tumor-classification-mri-images) when the raw data directory is empty.
+
+### 4. Run the experiment
+
+Open [`notebooks/main.ipynb`](../notebooks/main.ipynb) in Jupyter and run the cells in order. The notebook prepares the dataset, trains all three models, prints classification reports, and regenerates the plots in `results/`.
+
+Training automatically uses CUDA when a compatible GPU is available and falls back to CPU otherwise.
+
+## Project structure
+
+```text
+TumorTrace/
+├── data/           Dataset loading, preprocessing, and augmentation
+├── docs/           Project reports and supporting documentation
+├── environments/   Reproducible Conda environment
+├── notebooks/      End-to-end model comparison experiment
+├── results/        Accuracy, loss, confusion-matrix, and error plots
+├── src/
+│   ├── models/     3D CNN, ResNet18, Inception v3, and trained weights
+│   ├── optimizer.py
+│   └── runner.py   Shared training and validation loop
+└── utils/          Dataset, metrics, plotting, and analysis helpers
+```
+
+## Explore the research
+
+- [`Project_Final.pdf`](Project_Final.pdf) — complete methodology, experiments, and findings
+- [`notebooks/main.ipynb`](../notebooks/main.ipynb) — executable model comparison and recorded outputs
+- [`results/`](../results/) — learning curves, confusion matrices, and error analysis
+- [`src/models/`](../src/models/) — architecture implementations and trained checkpoints
+
+## Responsible use
+
+Medical imaging models can be wrong, biased, or unreliable outside their training distribution. TumorTrace was built for education and experimentation using a public dataset. It has not been clinically validated, should not be used to diagnose patients, and must not replace review by qualified healthcare professionals.
+
+If you extend this work, evaluate data provenance, patient privacy, subgroup performance, calibration, external validity, and failure modes before considering any real-world application.
+
+## Team
+
+- **Jimmy Vu** — Inception model and 3D CNN support
+- **William Akins** — ResNet model, experiment notebook, training runner, and preprocessing
+- **Chen Zhang** — 3D CNN and visualization utilities
+
+Built for CS 4644: Deep Learning, Spring 2025.
